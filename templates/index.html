@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Fruit Match 3</title>
+    <script src="https://unpkg.com/alpinejs" defer></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-yellow-50 min-h-screen flex flex-col items-center p-6">
+
+    <h1 class="text-4xl font-bold mb-6">Fruit Match 3</h1>
+
+    <div 
+        x-data="gameBoard()" 
+        class="flex flex-col items-center space-y-4"
+    >
+
+        <div class="grid grid-cols-8 gap-1">
+            <template x-for="(row, rowIndex) in board" :key="rowIndex">
+                <template x-for="(cell, colIndex) in row" :key="colIndex">
+                    <div 
+                        class="w-10 h-10 flex items-center justify-center bg-white rounded shadow text-2xl cursor-pointer border-2"
+                        :class="{
+                            'border-blue-500': selected && selected.row === rowIndex && selected.col === colIndex,
+                            'border-transparent': !(selected && selected.row === rowIndex && selected.col === colIndex)
+                        }"
+                        x-text="cell"
+                        @click="selectCell(rowIndex, colIndex)"
+                    ></div>
+                </template>
+            </template>
+        </div>
+
+        <!-- Start Game Button -->
+        <button 
+            class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+            @click="startGame"
+        >
+            Start Game
+        </button>
+
+        <!-- High Scores -->
+        <div class="mt-8 w-64">
+            <h2 class="text-2xl font-semibold mb-4 text-center">High Scores</h2>
+            <ol class="list-decimal list-inside space-y-1 text-gray-700">
+                <template x-for="(score, index) in highScores" :key="index">
+                    <li x-text="score"></li>
+                </template>
+            </ol>
+        </div>
+
+    </div>
+
+    <script>
+        function gameBoard() {
+            const fruits = ['🍌', '🍑', '🍎', '🍊'];
+    
+            return {
+                board: [],
+                highScores: [5000, 4200, 3700, 2900, 1500],
+                selected: null,
+                ws: null,  // websocket
+    
+                startGame() {
+                    this.board = Array.from({ length: 8 }, () =>
+                        Array.from({ length: 8 }, () =>
+                            fruits[Math.floor(Math.random() * fruits.length)]
+                        )
+                    );
+    
+                    this.connectWebSocket();
+                },
+    
+                selectCell(row, col) {
+                    if (!this.selected) {
+                        // First click: select
+                        this.selected = { row, col };
+                    } else {
+                        // Second click: swap
+                        this.swapCells(this.selected.row, this.selected.col, row, col);
+                        this.sendMove(this.selected, { row, col });
+                        this.selected = null;
+                    }
+                },
+    
+                swapCells(row1, col1, row2, col2) {
+                    const temp = this.board[row1][col1];
+                    this.board[row1][col1] = this.board[row2][col2];
+                    this.board[row2][col2] = temp;
+                },
+    
+                connectWebSocket() {
+                    this.ws = new WebSocket("ws://localhost:8000/ws");  // example URL
+    
+                    this.ws.onopen = () => console.log('WebSocket connected');
+                    this.ws.onclose = () => console.log('WebSocket disconnected');
+                    this.ws.onerror = (e) => console.error('WebSocket error', e);
+                    this.ws.onmessage = (e) => {
+                        const data = JSON.parse(e.data);
+                        if (data.action === "update_board") {
+                            this.board = data.board;
+                        }
+                    };
+                },
+    
+                sendMove(from, to) {
+                    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                        this.ws.send(JSON.stringify({
+                            action: "move",
+                            from: from,
+                            to: to
+                        }));
+                    }
+                },
+    
+                init() {
+                    this.startGame();
+                }
+            }
+        }
+    </script>
+
+</body>
+</html>
