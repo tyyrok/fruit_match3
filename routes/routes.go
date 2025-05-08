@@ -53,11 +53,11 @@ func Run(dbpool *pgxpool.Pool) {
 	})
 	router.LoadHTMLGlob("templates/*")
 
-	//v1 := router.Group("/api", CheckOrigin())
+	v1 := router.Group("/api", CheckOrigin())
 
 	router.GET("/", mainPageHandler)
 
-	//v1.POST("/:question_id/:answer_id", answerHandler)
+	v1.GET("/start", gameHandler)
 
 	srv := &http.Server{
 		Addr:    ":" + httpPort,

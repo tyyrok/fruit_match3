@@ -91,13 +91,14 @@
                 },
 
                 connectWebSocket() {
-                    this.ws = new WebSocket("ws://localhost:8000/ws");
+                    this.ws = new WebSocket(`ws://${location.host}/api/start`);
 
                     this.ws.onopen = () => console.log('WebSocket connected');
-                    this.ws.onclose = () => console.log('WebSocket disconnected');
+                    this.ws.onclose = (e) => console.log('WebSocket disconnected', e);
                     this.ws.onerror = (e) => console.error('WebSocket error', e);
                     this.ws.onmessage = (e) => {
                         const data = JSON.parse(e.data);
+                        console.log("Message", data);
                         if (data.action === "update_board") {
                             this.board = data.board;
                         }
