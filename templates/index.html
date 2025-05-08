@@ -99,16 +99,26 @@
                     this.ws.onmessage = (e) => {
                         const data = JSON.parse(e.data);
                         console.log("Message", data);
-                        if (data.action === "update_board") {
-                            this.board = data.board;
+                        if (data.type === "update_board") {
+
+                            this.board = this.format_board(data.data.board);
                         }
                     };
+                },
+
+                format_board(board) {
+                    for (let i = 0; i < 8; i++) {
+                        for (let j = 0; j < 8; j++) {
+                            board[i][j] = fruits[board[i][j]]
+                        }
+                    }
+                    return board
                 },
 
                 sendMove(from, to) {
                     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
                         this.ws.send(JSON.stringify({
-                            action: "move",
+                            type: "move",
                             from: from,
                             to: to
                         }));
