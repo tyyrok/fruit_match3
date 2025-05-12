@@ -1,10 +1,10 @@
 package routes
 
 import (
-	"net/http"
-	"log"
 	"encoding/json"
+	"log"
 	"math/rand/v2"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -29,8 +29,11 @@ func gameHandler(ctx *gin.Context) {
 	}
 	defer c.Close()
 
-	res := getStartGameBoard()
-	data, _ := json.Marshal(res)
+	gameState := getInitialGameState()
+	data, _ := json.Marshal(&Message{
+		Type: "update_board",
+		Data: map[string]any{"board": gameState.Cells},
+	})
 	err = c.WriteMessage(1, data)
 	if err != nil {
 		log.Printf("Write msg error: %s", err)
@@ -43,7 +46,7 @@ func gameHandler(ctx *gin.Context) {
 			log.Printf("Read msg error: %s", err)
 			break
 		}
-		log.Printf("received: %s with type: %d", message, mt)
+		log.Printf("received: %s", message)
 		var msg Message
 		err = json.Unmarshal(message, &msg)
 		if err != nil {
@@ -54,30 +57,55 @@ func gameHandler(ctx *gin.Context) {
 				break
 			}
 		}
-		res, _ := processMessage(&msg)
+		res, _ := processMessage(&msg, gameState)
 		data, _ = json.Marshal(res)
 		err = c.WriteMessage(mt, data)
 		if err != nil {
 			log.Printf("Write msg error: %s", err)
 			break
 		}
+		if res.Type == "end_game"{
+			break
+		}
 	}
 }
 
 
-func processMessage(msg *Message) (*Message, error) {
+func processMessage(msg *Message, state *GameBoard) (*Message, error) {
+	switch msg.Type {
+	case "move":
+		return processTurn(msg, state)
+	case "end_game":
+		return processEndGame(msg, state)
+	default:
+		return &Message{
+			Type: "error",
+		}, nil
+	}
+}
+
+func processTurn(msg *Message, state *GameBoard) (*Message, error) {
+	turn, err := validateTurn(msg)
+	if err != nil {
+		return &Message{Type: "turn validation error",}, nil
+	}
+
+	new_board := copyArray(state.Cells)
+	new_board[turn.FromRow][turn.FromCol], new_board[turn.ToRow][turn.ToCol] = new_board[turn.ToRow][turn.ToCol], new_board[turn.FromRow][turn.FromCol]
 	return &Message{}, nil
 }
 
-func getStartGameBoard() *Message {
+func processEndGame(msg *Message, state *GameBoard) (*Message, error) {
+	// TODO: implement saving game res
+	return &Message{}, nil
+}
+
+func getInitialGameState() *GameBoard {
 	var board GameBoard
 	for i := 0; i < 8; i++ {
 		for j := 0; j < 8; j++ {
 			board.Cells[i][j] = rand.IntN(4)
 		}
 	}
-	return &Message{
-		Type: "update_board",
-		Data: map[string]any{"board": board.Cells},
-	}
+	return &board
 }

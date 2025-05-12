@@ -78,8 +78,8 @@
                     if (!this.selected) {
                         this.selected = { row, col };
                     } else {
-                        this.swapCells(this.selected.row, this.selected.col, row, col);
                         this.sendMove(this.selected, { row, col });
+                        //this.swapCells(this.selected.row, this.selected.col, row, col);
                         this.selected = null;
                     }
                 },
@@ -100,8 +100,11 @@
                         const data = JSON.parse(e.data);
                         console.log("Message", data);
                         if (data.type === "update_board") {
-
                             this.board = this.format_board(data.data.board);
+                        } else if (data.type == "success") {
+                            this.swapCells(data.data.from_row, data.data.from_col, data.data.to_row, data.data.to_col);
+                        } else if (data.type == "failure") {
+
                         }
                     };
                 },
