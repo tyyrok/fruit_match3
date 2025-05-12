@@ -35,13 +35,19 @@
             </template>
         </div>
 
-        <!-- Start Game Button -->
-        <button 
-            class="px-6 py-3 bg-indigo-500 rounded-full hover:bg-indigo-700 transition transform hover:scale-105 text-lg font-semibold shadow-lg"
-            @click="startGame"
-        >
-            🚀 Start Game
-        </button>
+        <!-- Score -->
+        <div class="text-2xl font-semibold text-indigo-300">
+            Your score: <span x-text="score"></span>
+        </div>
+
+        <div x-data="{ gameStarted: false }">
+            <!-- Start/End Game Button -->
+            <button 
+                class="px-6 py-3 bg-indigo-500 rounded-full hover:bg-indigo-700 transition transform hover:scale-105 text-lg font-semibold shadow-lg"
+                @click="gameStarted ? endGame() : startGame(); gameStarted = !gameStarted"
+                x-text="gameStarted ? '🛑 End Game' : '🚀 Start Game'"
+            ></button>
+        </div>
 
         <!-- High Scores -->
         <div class="w-full mt-10 bg-white/10 backdrop-blur-md rounded-xl p-6 shadow-inner">
@@ -64,6 +70,7 @@
                 highScores: [5000, 4200, 3700, 2900, 1500],
                 selected: null,
                 ws: null,
+                score: 0,
 
                 startGame() {
                     this.board = Array.from({ length: 8 }, () =>
@@ -72,6 +79,10 @@
                         )
                     );
                     this.connectWebSocket();
+                },
+
+                endGame() {
+                    this.sendEndGame();
                 },
 
                 selectCell(row, col) {
@@ -105,6 +116,10 @@
                             this.swapCells(data.data.from_row, data.data.from_col, data.data.to_row, data.data.to_col);
                         } else if (data.type == "failure") {
 
+                        } else if (data.type == "end_game") {
+                            if ("score" in data.data) {
+                                this.score = data.data.score;
+                            }
                         }
                     };
                 },
@@ -124,6 +139,14 @@
                             type: "move",
                             from: from,
                             to: to
+                        }));
+                    }
+                },
+
+                sendEndGame(from, to) {
+                    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                        this.ws.send(JSON.stringify({
+                            type: "end_game",
                         }));
                     }
                 },

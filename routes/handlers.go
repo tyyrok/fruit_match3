@@ -70,13 +70,12 @@ func gameHandler(ctx *gin.Context) {
 	}
 }
 
-
 func processMessage(msg *Message, state *GameBoard) (*Message, error) {
 	switch msg.Type {
 	case "move":
 		return processTurn(msg, state)
 	case "end_game":
-		return processEndGame(msg, state)
+		return processEndGame(state)
 	default:
 		return &Message{
 			Type: "error",
@@ -95,9 +94,9 @@ func processTurn(msg *Message, state *GameBoard) (*Message, error) {
 	return &Message{}, nil
 }
 
-func processEndGame(msg *Message, state *GameBoard) (*Message, error) {
+func processEndGame(state *GameBoard) (*Message, error) {
 	// TODO: implement saving game res
-	return &Message{}, nil
+	return &Message{Type: "end_game", Data: map[string]any{"score": state.Scores}}, nil
 }
 
 func getInitialGameState() *GameBoard {
