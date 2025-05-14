@@ -72,12 +72,15 @@
                 ws: null,
                 score: 0,
 
-                startGame() {
+                generateInitialBoard() {
                     this.board = Array.from({ length: 8 }, () =>
                         Array.from({ length: 8 }, () =>
                             fruits[Math.floor(Math.random() * fruits.length)]
                         )
                     );
+                },
+
+                startGame() {
                     this.connectWebSocket();
                 },
 
@@ -159,7 +162,7 @@
                 },
 
                 init() {
-                    this.startGame();
+                    this.generateInitialBoard();
                 }
             }
         }
