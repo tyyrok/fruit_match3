@@ -91,7 +91,18 @@ func processTurn(msg *Message, state *GameBoard) (*Message, error) {
 
 	new_board := copyArray(state.Cells)
 	new_board[turn.FromRow][turn.FromCol], new_board[turn.ToRow][turn.ToCol] = new_board[turn.ToRow][turn.ToCol], new_board[turn.FromRow][turn.FromCol]
-	return &Message{}, nil
+	combs := findCombinations(new_board)
+	if len(combs) > 0 {
+		_ = updateState(state, &combs, turn)
+		return &Message{
+			Type: "move",
+			Data: map[string]any{"status": "success", "turns": combs},
+		}, nil
+	}
+	return &Message{
+		Type: "move",
+		Data: map[string]any{"status": "failure"},
+	}, nil
 }
 
 func processEndGame(state *GameBoard) (*Message, error) {

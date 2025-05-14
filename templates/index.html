@@ -112,10 +112,12 @@
                         console.log("Message", data);
                         if (data.type === "update_board") {
                             this.board = this.format_board(data.data.board);
-                        } else if (data.type == "success") {
-                            this.swapCells(data.data.from_row, data.data.from_col, data.data.to_row, data.data.to_col);
-                        } else if (data.type == "failure") {
+                        } else if (data.type == "move") {
+                            if (data.data.status == "success") {
+                                this.swapCells(data.data.from_row, data.data.from_col, data.data.to_row, data.data.to_col);
+                            } else if (data.data.status == "failure") {
 
+                            }
                         } else if (data.type == "end_game") {
                             if ("score" in data.data) {
                                 this.score = data.data.score;
@@ -137,8 +139,12 @@
                     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
                         this.ws.send(JSON.stringify({
                             type: "move",
-                            from: from,
-                            to: to
+                            data: {
+                                from_row: from.row,
+                                from_col: from.col,
+                                to_row: to.row,
+                                to_col: to.col,
+                            }
                         }));
                     }
                 },

@@ -2,8 +2,120 @@ package routes
 
 import (
 	"errors"
+	"log"
 	"strconv"
 )
+
+func updateState(state *GameBoard, combs *[]Combination, t *Turn) *GameBoard {
+	state.Scores += getScoresForCombs(combs)
+	state.Cells = updateGameBoard(state.Cells, t)
+	return state	
+}
+
+func updateGameBoard(b [8][8]int, t *Turn) [8][8]int {
+	b[t.FromRow][t.FromCol], b[t.ToRow][t.ToCol] = b[t.ToRow][t.ToCol], b[t.FromRow][t.FromCol]
+	return b
+}
+
+func getScoresForCombs(combs *[]Combination) int {
+	scores := 0
+	for _, comb := range *combs {
+		scores += comb.getLenght()
+	}
+	return scores
+}
+
+func findCombinations(board *[8][8]int) []Combination {
+	var combs []Combination
+	combs = findVerticalCombs(board)
+	combs = append(combs, findHorizontalCombs(board)...)
+	combs = removeDuplicateCombs(combs)
+	return combs
+}
+
+func removeDuplicateCombs(combs []Combination) []Combination {
+	var res []Combination
+	for _, val := range combs {
+		toAdd := val
+		for _, val_2 := range combs {
+			if val.checkIntersection(&val_2) {
+				if val.getLenght() < val_2.getLenght() {
+					toAdd = val_2
+				}
+			}
+		}
+		if !checkIsAlreadyInSlice(res, toAdd) {
+			res = append(res, toAdd)
+		}
+	}
+	return res
+}
+
+func checkIsAlreadyInSlice(slice []Combination, elem Combination) bool {
+	for _, e := range slice {
+		if elem.equal(&e) {
+			return true
+		}
+	}
+	return false
+}
+
+
+func findVerticalCombs(board *[8][8]int) []Combination {
+	var combs []Combination
+	for i := 0; i < 8; i ++ {
+		start := -1
+		for j := 0; j < 6; j ++ {
+			if board[i][j] == board[i][j+1] && board[i][j] == board[i][j+2] {
+				k := j + 3
+				for k < 6 {
+					if board[i][j] == board[i][k] {
+						j = k
+						k += 1
+					} else {
+						break
+					}
+				}
+				var points []Point
+				for k := 0; k < j - start; k ++ {
+					points = append(points, Point{X: i, Y: k})
+				}
+				comb := Combination{Points: points}
+				combs = append(combs, comb)
+			}
+		}
+	}
+	log.Println(combs)
+	return combs
+}
+
+func findHorizontalCombs(board *[8][8]int) []Combination {
+	var combs []Combination
+	for i := 0; i < 8; i ++ {
+		start := -1
+		for j := 0; j < 6; j ++ {
+			if board[j][i] == board[j+1][i] && board[j][i] == board[j+2][i] {
+				k := j + 3
+				for k < 6 {
+					if board[j][i] == board[k][i] {
+						j = k
+						k += 1
+					} else {
+						break
+					}
+				}
+				var points []Point
+				for k := 0; k < j - start; k ++ {
+					points = append(points, Point{X: k, Y: i})
+				}
+				comb := Combination{Points: points}
+				combs = append(combs, comb)
+			}
+		}
+	}
+	log.Println(combs)
+	return combs
+}
 
 func validateTurn(msg *Message) (*Turn, error) {
 	var fail bool
