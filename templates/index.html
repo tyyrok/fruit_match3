@@ -29,7 +29,7 @@
                             'ring-0': !(selected && selected.row === rowIndex && selected.col === colIndex)
                         }"
                         x-text="cell"
-                        @click="selectCell(board.length - 1 - rowIndex, colIndex)"
+                        @click="selectCell(rowIndex, colIndex)"
                     ></div>
                 </template>
             </template>
@@ -89,7 +89,7 @@
                     if (!this.selected) {
                         this.selected = { row, col };
                     } else {
-                        this.sendMove(this.selected, { row, col });
+                        this.sendMove(this.selected, { row , col });
                         //this.swapCells(this.selected.row, this.selected.col, row, col);
                         this.selected = null;
                     }
@@ -141,9 +141,9 @@
                         this.ws.send(JSON.stringify({
                             type: "move",
                             data: {
-                                from_row: from.row,
+                                from_row: this.board.length - 1 - from.row,
                                 from_col: from.col,
-                                to_row: to.row,
+                                to_row: this.board.length - 1 - to.row,
                                 to_col: to.col,
                             }
                         }));
