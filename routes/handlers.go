@@ -112,9 +112,15 @@ func processEndGame(state *GameBoard) (*Message, error) {
 
 func getInitialGameState() *GameBoard {
 	var board GameBoard
-	for i := 0; i < 8; i++ {
-		for j := 0; j < 8; j++ {
-			board.Cells[i][j] = rand.IntN(4)
+	for {
+		for i := 0; i < 8; i++ {
+			for j := 0; j < 8; j++ {
+				board.Cells[i][j] = rand.IntN(4)
+			}
+		}
+		combs := findCombinations(&board.Cells)
+		if len(combs) == 0 {
+			break
 		}
 	}
 	return &board
