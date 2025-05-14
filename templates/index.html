@@ -18,9 +18,9 @@
 
     <div x-data="gameBoard()" class="flex flex-col items-center space-y-8 w-full max-w-3xl">
 
-        <!-- Game Board -->
+        <!--Game Board-->
         <div class="grid grid-cols-8 gap-2">
-            <template x-for="(row, rowIndex) in board" :key="rowIndex">
+            <template x-for="(row, rowIndex) in [...board].reverse()" :key="rowIndex">
                 <template x-for="(cell, colIndex) in row" :key="colIndex">
                     <div 
                         class="w-12 h-12 flex items-center justify-center rounded-lg bg-gray-800 hover:bg-indigo-600 text-3xl cursor-pointer transition-all duration-200 ease-in-out transform hover:scale-110 shadow-md"
@@ -29,7 +29,7 @@
                             'ring-0': !(selected && selected.row === rowIndex && selected.col === colIndex)
                         }"
                         x-text="cell"
-                        @click="selectCell(rowIndex, colIndex)"
+                        @click="selectCell(board.length - 1 - rowIndex, colIndex)"
                     ></div>
                 </template>
             </template>
@@ -112,6 +112,7 @@
                         console.log("Message", data);
                         if (data.type === "update_board") {
                             this.board = this.format_board(data.data.board);
+                            console.log(this.board);
                         } else if (data.type == "move") {
                             if (data.data.status == "success") {
                                 this.swapCells(data.data.from_row, data.data.from_col, data.data.to_row, data.data.to_col);
