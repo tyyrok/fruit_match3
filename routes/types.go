@@ -50,7 +50,7 @@ func (c *Combination) getLenght() int {
 func (c *Combination) checkIntersection(d *Combination) bool {
 	for _, val_c := range c.Points {
 		for _, val_d := range d.Points {
-			if val_c == val_d {
+			if val_c.equal(&val_d) {
 				return true
 			}
 		}

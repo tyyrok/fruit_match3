@@ -6,9 +6,10 @@ import (
 	"strconv"
 )
 
+
 func updateState(state *GameBoard, combs *[]Combination, t *Turn) *GameBoard {
 	state.Scores += getScoresForCombs(combs)
-	state.Cells = updateGameBoard(state.Cells, t)
+	//state.Cells = updateGameBoard(state.Cells, t)
 	return state	
 }
 
@@ -61,58 +62,57 @@ func checkIsAlreadyInSlice(slice []Combination, elem Combination) bool {
 }
 
 
-func findVerticalCombs(board *[8][8]int) []Combination {
+func findHorizontalCombs(board *[8][8]int) []Combination {
 	var combs []Combination
 	for i := 0; i < 8; i ++ {
-		start := -1
 		for j := 0; j < 6; j ++ {
 			if board[i][j] == board[i][j+1] && board[i][j] == board[i][j+2] {
-				k := j + 3
-				for k < 6 {
+				k := j + 1
+				for k < 8 {
 					if board[i][j] == board[i][k] {
-						j = k
 						k += 1
 					} else {
 						break
 					}
 				}
 				var points []Point
-				for k := 0; k < j - start; k ++ {
-					points = append(points, Point{X: i, Y: k})
+				for t := j; t < k; t ++ {
+					points = append(points, Point{X: t, Y: i})
 				}
 				comb := Combination{Points: points}
 				combs = append(combs, comb)
 			}
 		}
 	}
+	log.Println("Horizontal")
 	log.Println(combs)
 	return combs
 }
 
-func findHorizontalCombs(board *[8][8]int) []Combination {
+func findVerticalCombs(board *[8][8]int) []Combination {
 	var combs []Combination
 	for i := 0; i < 8; i ++ {
-		start := -1
 		for j := 0; j < 6; j ++ {
 			if board[j][i] == board[j+1][i] && board[j][i] == board[j+2][i] {
-				k := j + 3
-				for k < 6 {
+				k := j + 1
+				for k < 8 {
 					if board[j][i] == board[k][i] {
-						j = k
 						k += 1
 					} else {
 						break
 					}
 				}
 				var points []Point
-				for k := 0; k < j - start; k ++ {
-					points = append(points, Point{X: k, Y: i})
+				for t := j; t < k; t ++ {
+					points = append(points, Point{X: i, Y: t})
 				}
 				comb := Combination{Points: points}
 				combs = append(combs, comb)
 			}
 		}
 	}
+	log.Println("Vertical")
+	log.Println(board)
 	log.Println(combs)
 	return combs
 }
