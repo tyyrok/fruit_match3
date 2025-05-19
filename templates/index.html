@@ -119,6 +119,7 @@
                             console.log(this.board);
                         } else if (data.type == "move") {
                             if (data.data.status == "success") {
+                                this.score = data.data.scores;
                                 this.swapCells(data.data.from_row, data.data.from_col, data.data.to_row, data.data.to_col);
                             } else if (data.data.status == "failure") {
 

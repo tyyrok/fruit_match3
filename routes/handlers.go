@@ -58,16 +58,53 @@ func gameHandler(ctx *gin.Context) {
 			}
 		}
 		res, _ := processMessage(&msg, gameState)
-		data, _ = json.Marshal(res)
-		err = c.WriteMessage(mt, data)
-		if err != nil {
-			log.Printf("Write msg error: %s", err)
+		ok := sendMessage(res, mt, c)
+		if !ok {
 			break
 		}
 		if res.Type == "end_game"{
 			break
 		}
+		/*
+		for {
+			res, err := processAutoTurn(gameState)
+			if err != nil {
+				ok := sendMessage(&Message{Type: "resume"}, mt, c)
+				if !ok {
+					return
+				}
+				break
+			}
+			ok = sendMessage(res, mt, c)
+			if !ok {
+				return
+			}
+		}
+		*/
 	}
+}
+
+// Todo autoturn and board change
+func processAutoTurn(state *GameBoard) (*Message, error) {
+	combs := findCombinations(&state.Cells)
+	if len(combs) > 0 {
+		_ = updateState(state, &combs, &Turn{})
+		return &Message{
+			Type: "move",
+			Data: map[string]any{"status": "success", "turns": combs},
+		}, nil
+	}
+	return &Message{}, nil
+}
+
+func sendMessage(msg *Message, mt int, c *websocket.Conn) bool {
+	data, _ := json.Marshal(msg)
+	err := c.WriteMessage(mt, data)
+	if err != nil {
+		log.Printf("Write msg error: %s", err)
+		return false
+	}
+	return true
 }
 
 func processMessage(msg *Message, state *GameBoard) (*Message, error) {
@@ -96,7 +133,8 @@ func processTurn(msg *Message, state *GameBoard) (*Message, error) {
 		_ = updateState(state, &combs, turn)
 		return &Message{
 			Type: "move",
-			Data: map[string]any{"status": "success", "turns": combs},
+			Data: map[string]any{
+				"status": "success", "turns": combs, "board": state.Cells, "scores": state.Scores},
 		}, nil
 	}
 	return &Message{

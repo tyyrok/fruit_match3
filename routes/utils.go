@@ -3,20 +3,29 @@ package routes
 import (
 	"errors"
 	"log"
+	"math/rand/v2"
+	"sort"
 	"strconv"
 )
 
 
 func updateState(state *GameBoard, combs *[]Combination, t *Turn) *GameBoard {
-	state.Scores += getScoresForCombs(combs)
-	//state.Cells = updateGameBoard(state.Cells, t)
+	new_score := getScoresForCombs(combs)
+	state.Scores += new_score
+	newElems := getNewElems(new_score)
+	state.updateBoadByTurn(t)
+	state.updateBoard(combs, *newElems)
 	return state	
 }
 
-func updateGameBoard(b [8][8]int, t *Turn) [8][8]int {
-	b[t.FromRow][t.FromCol], b[t.ToRow][t.ToCol] = b[t.ToRow][t.ToCol], b[t.FromRow][t.FromCol]
-	return b
+func getNewElems(number int) *[]int {
+	var res []int
+	for i := 0; i < number; i++ {
+		res = append(res, rand.IntN(4))
+	}
+	return &res
 }
+
 
 func getScoresForCombs(combs *[]Combination) int {
 	scores := 0
@@ -27,21 +36,29 @@ func getScoresForCombs(combs *[]Combination) int {
 }
 
 func findCombinations(board *[8][8]int) []Combination {
+	for _, val := range board {
+		log.Println(val)
+	}
 	var combs []Combination
 	combs = findVerticalCombs(board)
 	combs = append(combs, findHorizontalCombs(board)...)
 	combs = removeDuplicateCombs(combs)
+	log.Println("Combs")
+	log.Println(combs)
 	return combs
 }
 
 func removeDuplicateCombs(combs []Combination) []Combination {
 	var res []Combination
+	sort.Slice(combs, func(i, j int) bool {
+		return combs[i].getLenght() > combs[j].getLenght()
+	})
 	for _, val := range combs {
 		toAdd := val
-		for _, val_2 := range combs {
-			if val.checkIntersection(&val_2) {
-				if val.getLenght() < val_2.getLenght() {
-					toAdd = val_2
+		for j := 0; j < len(combs); j ++ {
+			if val.checkIntersection(&combs[j]) {
+				if val.getLenght() < combs[j].getLenght() {
+					toAdd = combs[j]
 				}
 			}
 		}
@@ -112,7 +129,7 @@ func findVerticalCombs(board *[8][8]int) []Combination {
 		}
 	}
 	log.Println("Vertical")
-	log.Println(board)
+	//log.Println(board)
 	log.Println(combs)
 	return combs
 }

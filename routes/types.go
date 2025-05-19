@@ -31,6 +31,34 @@ type Combination struct {
 	Points []Point `json:"points"`
 }
 
+
+func (b *GameBoard) updateBoadByTurn(t *Turn) {
+	b.Cells[t.FromRow][t.FromCol], b.Cells[t.ToRow][t.ToCol] = b.Cells[t.ToRow][t.ToCol], b.Cells[t.FromRow][t.FromCol]
+}
+
+func (b *GameBoard) updateBoard(combs *[]Combination, newElems []int) {
+	for _, comb := range *combs {
+		if comb.isHorizontal() {
+			for _, point := range comb.Points {
+				i := point.X
+				for i > 0 {
+					b.Cells[i][point.Y] = b.Cells[i-1][point.Y]
+					i -= 1
+				}
+				b.Cells[0][point.Y] = newElems[0]
+				newElems = newElems[1:]
+			}
+		} else {
+
+		}
+		
+	}
+}
+
+func (c *Combination) isHorizontal() bool {
+	return c.Points[0].X == c.Points[1].X
+}
+
 func (c *Combination) equal(d *Combination) bool {
 	if len(c.Points) != len(d.Points) {
 		return false
