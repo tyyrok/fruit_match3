@@ -134,7 +134,11 @@ func processTurn(msg *Message, state *GameBoard) (*Message, error) {
 		return &Message{
 			Type: "move",
 			Data: map[string]any{
-				"status": "success", "turns": combs, "board": state.Cells, "scores": state.Scores},
+				"status": "success",
+				"turns": combs,
+				"board": state.Cells,
+				"scores": state.Scores,
+				"turn": turn},
 		}, nil
 	}
 	return &Message{

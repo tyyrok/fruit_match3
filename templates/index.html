@@ -120,7 +120,7 @@
                         } else if (data.type == "move") {
                             if (data.data.status == "success") {
                                 this.score = data.data.scores;
-                                this.swapCells(data.data.from_row, data.data.from_col, data.data.to_row, data.data.to_col);
+                                this.swapCells(data.data.turn.FromRow, data.data.turn.FromCol, data.data.turn.ToRow, data.data.turn.ToCol);
                             } else if (data.data.status == "failure") {
 
                             }
