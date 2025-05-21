@@ -26,7 +26,9 @@
                         class="w-12 h-12 flex items-center justify-center rounded-lg bg-gray-800 hover:bg-indigo-600 text-3xl cursor-pointer transition-all duration-200 ease-in-out transform hover:scale-110 shadow-md"
                         :class="{
                             'ring-4 ring-indigo-400': selected && selected.row === rowIndex && selected.col === colIndex,
-                            'ring-0': !(selected && selected.row === rowIndex && selected.col === colIndex)
+                            'ring-0': !(selected && selected.row === rowIndex && selected.col === colIndex),
+                            'opacity-0 scale-0': isBurning(rowIndex, colIndex),
+                            'opacity-100 scale-100': !isBurning(rowIndex, colIndex)
                         }"
                         x-text="cell"
                         @click="selectCell(rowIndex, colIndex)"
@@ -71,6 +73,7 @@
                 selected: null,
                 ws: null,
                 score: 0,
+                burningCells: [],
 
                 generateInitialBoard() {
                     this.board = Array.from({ length: 8 }, () =>
@@ -78,6 +81,10 @@
                             fruits[Math.floor(Math.random() * fruits.length)]
                         )
                     );
+                },
+
+                isBurning(row, col) {
+                    return this.burningCells.some(cell => cell.row === row && cell.col === col);
                 },
 
                 startGame() {
@@ -94,7 +101,6 @@
                         this.selected = { row, col };
                     } else {
                         this.sendMove(this.selected, { row , col });
-                        //this.swapCells(this.selected.row, this.selected.col, row, col);
                         this.selected = null;
                     }
                 },
@@ -116,11 +122,11 @@
                         console.log("Message", data);
                         if (data.type === "update_board") {
                             this.board = this.format_board(data.data.board);
-                            console.log(this.board);
                         } else if (data.type == "move") {
                             if (data.data.status == "success") {
                                 this.score = data.data.scores;
                                 this.swapCells(data.data.turn.FromRow, data.data.turn.FromCol, data.data.turn.ToRow, data.data.turn.ToCol);
+                                this.handleTurnResult(data.data);
                             } else if (data.data.status == "failure") {
 
                             }
@@ -130,6 +136,26 @@
                             }
                         }
                     };
+                },
+
+                handleTurnResult(data) {
+                    const elems = [];
+                    console.log(data)
+                    for (const turn in data.turns) {
+                        for (const p in data.turns[turn].points) {
+                            elems.push({
+                                row: 7 - data.turns[turn].points[p].y,
+                                col: data.turns[turn].points[p].x
+                            })
+                        }
+                    }
+                    this.burningCells = elems;
+    
+                    setTimeout(() => {
+                        this.board = this.format_board(data.board);
+                        this.burningCells = [];
+                        this.score = data.scores;
+                    }, 200);
                 },
 
                 format_board(board) {

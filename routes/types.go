@@ -1,5 +1,7 @@
 package routes
 
+import ("log")
+
 type Message struct {
 	Type string `json:"type"`
 	Data map[string]any `json:"data"`
@@ -40,23 +42,26 @@ func (b *GameBoard) updateBoard(combs *[]Combination, newElems []int) {
 	for _, comb := range *combs {
 		if comb.isHorizontal() {
 			for _, point := range comb.Points {
-				i := point.X
+				i := point.Y
 				for i > 0 {
-					b.Cells[i][point.Y] = b.Cells[i-1][point.Y]
+					b.Cells[i][point.X] = b.Cells[i-1][point.X]
 					i -= 1
 				}
-				b.Cells[0][point.Y] = newElems[0]
+				b.Cells[0][point.X] = newElems[0]
 				newElems = newElems[1:]
 			}
 		} else {
-
+			for _, point := range comb.Points {
+				b.Cells[point.Y][point.X] = newElems[0]
+				newElems = newElems[1:]
+			}
 		}
 		
 	}
 }
 
 func (c *Combination) isHorizontal() bool {
-	return c.Points[0].X == c.Points[1].X
+	return c.Points[0].Y == c.Points[1].Y
 }
 
 func (c *Combination) equal(d *Combination) bool {
