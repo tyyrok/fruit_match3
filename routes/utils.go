@@ -13,7 +13,9 @@ func updateState(state *GameBoard, combs *[]Combination, t *Turn) *GameBoard {
 	new_score := getScoresForCombs(combs)
 	state.Scores += new_score
 	newElems := getNewElems(new_score)
-	state.updateBoadByTurn(t)
+	if t != nil || *t != (Turn{}) {
+		state.updateBoadByTurn(t)
+	}
 	state.updateBoard(combs, *newElems)
 	return state	
 }

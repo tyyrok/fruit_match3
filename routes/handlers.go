@@ -2,6 +2,7 @@ package routes
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"math/rand/v2"
 	"net/http"
@@ -65,7 +66,6 @@ func gameHandler(ctx *gin.Context) {
 		if res.Type == "end_game"{
 			break
 		}
-		/*
 		for {
 			res, err := processAutoTurn(gameState)
 			if err != nil {
@@ -80,7 +80,6 @@ func gameHandler(ctx *gin.Context) {
 				return
 			}
 		}
-		*/
 	}
 }
 
@@ -90,11 +89,15 @@ func processAutoTurn(state *GameBoard) (*Message, error) {
 	if len(combs) > 0 {
 		_ = updateState(state, &combs, &Turn{})
 		return &Message{
-			Type: "move",
-			Data: map[string]any{"status": "success", "turns": combs},
+			Type: "automove",
+			Data: map[string]any{
+				"status": "success",
+				"turns": combs,
+				"board": state.Cells,
+				"scores": state.Scores},
 		}, nil
 	}
-	return &Message{}, nil
+	return &Message{}, errors.New("not found automove")
 }
 
 func sendMessage(msg *Message, mt int, c *websocket.Conn) bool {

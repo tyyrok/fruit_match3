@@ -65,7 +65,7 @@
 
     <script>
         function gameBoard() {
-            const fruits = ['🍌', '🍑', '🍎', '🍊'];
+            const fruits = ['🍌', '🥝', '🍎', '🍊'];
 
             return {
                 board: [],
@@ -74,6 +74,9 @@
                 ws: null,
                 score: 0,
                 burningCells: [],
+                automoveQueue: [],
+                inputLocked: false,
+                isProcessingAutoMoves: false,
 
                 generateInitialBoard() {
                     this.board = Array.from({ length: 8 }, () =>
@@ -97,6 +100,7 @@
                 },
 
                 selectCell(row, col) {
+                    if (this.inputLocked) return;
                     if (!this.selected) {
                         this.selected = { row, col };
                     } else {
@@ -130,12 +134,41 @@
                             } else if (data.data.status == "failure") {
 
                             }
+                        } else if (data.type == "automove") {
+                            if (data.data.status == "success") {
+                                this.inputLocked = true;
+                                this.automoveQueue.push(data.data);
+                                this.score = data.data.scores;
+                                this.handleAutomoveQueue();
+                            }
+                        } else if (data.type == "resume") {
+                            if (this.isProcessingAutoMoves) {
+                                this.automoveQueue.push(data);
+                            }
                         } else if (data.type == "end_game") {
                             if ("score" in data.data) {
                                 this.score = data.data.score;
                             }
                         }
                     };
+                },
+
+                async handleAutomoveQueue() {
+                    if (this.isProcessingAutoMoves) return;
+                    this.isProcessingAutoMoves = true;
+                    while (this.automoveQueue.length > 0) {
+                        const move = this.automoveQueue[0];
+                        console.log(move);
+                        if (move?.type == "resume") {
+                            this.automoveQueue.shift();
+                            break
+                        }
+                        this.handleTurnResult(move);
+                        await this.delay(500);
+                        this.automoveQueue.shift();
+                    }
+                    this.isProcessingAutoMoves = false;
+                    this.inputLocked = false;
                 },
 
                 handleTurnResult(data) {
@@ -187,6 +220,12 @@
                             type: "end_game",
                         }));
                     }
+                    this.inputLocked = false;
+                    this.isProcessingAutoMoves = false;
+                },
+
+                delay(ms) {
+                    return new Promise(resolve => setTimeout(resolve, ms));
                 },
 
                 init() {
