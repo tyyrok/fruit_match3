@@ -30,6 +30,6 @@ func main() {
 	}
 	defer dbpool.Close()
 
-	//db.InitDB(dbpool)
+	InitDB(dbpool)
 	routes.Run(dbpool)
 }

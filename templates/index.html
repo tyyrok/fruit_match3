@@ -62,14 +62,16 @@
         </div>
 
     </div>
-
+    <script type="application/json" id="highScores-data">
+        {{ .highScores }}
+    </script>
     <script>
         function gameBoard() {
             const fruits = ['🍌', '🥝', '🍎', '🍊'];
 
             return {
                 board: [],
-                highScores: [5000, 4200, 3700, 2900, 1500],
+                //highScores: [5000, 4200, 3700, 2900, 1500],
                 selected: null,
                 ws: null,
                 score: 0,
@@ -77,7 +79,8 @@
                 automoveQueue: [],
                 inputLocked: false,
                 isProcessingAutoMoves: false,
-
+                highScores: [],
+                
                 generateInitialBoard() {
                     this.board = Array.from({ length: 8 }, () =>
                         Array.from({ length: 8 }, () =>
@@ -124,6 +127,7 @@
                         this.inputLocked = false;
                         this.isProcessingAutoMoves = false;
                         this.gameStarted = false;
+                        document.location.reload();
                     };
                     this.ws.onerror = (e) => console.error('WebSocket error', e);
                     this.ws.onmessage = (e) => {
@@ -143,7 +147,6 @@
                             if (data.data.status == "success") {
                                 this.inputLocked = true;
                                 this.automoveQueue.push(data.data);
-                                this.score = data.data.scores;
                                 this.handleAutomoveQueue();
                             }
                         } else if (data.type == "resume") {
@@ -153,6 +156,7 @@
                         } else if (data.type == "end_game") {
                             if ("score" in data.data) {
                                 this.score = data.data.score;
+                                document.location.reload();
                             }
                         }
                     };
@@ -235,6 +239,15 @@
 
                 init() {
                     this.generateInitialBoard();
+                    const el = document.getElementById("highScores-data");
+                    if (el) {
+                        try {
+                            this.highScores = JSON.parse(el.textContent).map((e) => e.scores);
+                            console.log(this.highScores)
+                        } catch (e) {
+                            console.error("Invalid JSON in #highScores-data:", e);
+                        }
+                    }
                 }
             }
         }

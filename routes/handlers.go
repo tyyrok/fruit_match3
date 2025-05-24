@@ -3,6 +3,7 @@ package routes
 import (
 	"encoding/json"
 	"errors"
+	"html/template"
 	"log"
 	"math/rand/v2"
 	"net/http"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 var upgrader = websocket.Upgrader{}
@@ -17,10 +19,33 @@ var upgrader = websocket.Upgrader{}
 const pongwait = 60 * time.Second
 
 func mainPageHandler(ctx *gin.Context) {
+	dbctx, ok := ctx.Get("db")
+	if !ok {
+		log.Print("Failed to connect to db")
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Database connection not found"})
+		return
+	}
+	pool, ok := dbctx.(*pgxpool.Pool)
+	if !ok {
+		log.Print("Failed to connect to db")
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid database connection"})
+		return
+	}
+	highScores, err := getHighScores(pool)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get highScores"})
+		return
+	}
+	highScoresJSON, err := json.Marshal(highScores)
+	if err != nil {
+		log.Println("Error marshalling highscores:", err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
+		return
+	}
 	ctx.HTML(
 		http.StatusOK,
 		"index.html",
-		gin.H{"Name": "Gin Framework"})
+		gin.H{"Name": "Gin Framework", "highScores": template.JS(highScoresJSON)})
 }
 
 func gameHandler(ctx *gin.Context) {
@@ -34,7 +59,6 @@ func gameHandler(ctx *gin.Context) {
 	defer c.Close()
 
 	c.SetReadDeadline(time.Now().Add(pongwait))
-	c.SetPongHandler(func(string) error { c.SetReadDeadline(time.Now().Add(pongwait)); return nil })
 	gameState := getInitialGameState()
 	data, _ := json.Marshal(&Message{
 		Type: "update_board",
@@ -50,6 +74,7 @@ func gameHandler(ctx *gin.Context) {
 		mt, message, err := c.ReadMessage()
 		if err != nil {
 			log.Printf("Read msg error: %s", err)
+			saveGameResult(gameState, ctx)
 			break
 		}
 		log.Printf("received: %s", message)
@@ -69,6 +94,7 @@ func gameHandler(ctx *gin.Context) {
 			break
 		}
 		if res.Type == "end_game"{
+			saveGameResult(gameState, ctx)
 			break
 		}
 		for {

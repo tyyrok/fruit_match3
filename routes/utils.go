@@ -1,10 +1,15 @@
 package routes
 
 import (
+	"context"
 	"errors"
+	"log"
 	"math/rand/v2"
 	"sort"
 	"strconv"
+
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/gin-gonic/gin"
 )
 
 
@@ -190,4 +195,47 @@ func copyArray(arr [8][8]int) *[8][8]int {
 		}
 	}
 	return &dst
+}
+
+func getHighScores(pool *pgxpool.Pool) ([]HighScore, error) {
+	rows, err := pool.Query(
+		context.Background(),
+		`SELECT m3tops.id, m3tops.scores FROM m3tops ORDER BY m3tops.scores DESC LIMIT 5;`)
+	if err != nil {
+		log.Printf("Failed to retrieve data %s", err)
+		return nil, err
+	}
+	defer rows.Close()
+	var highScores []HighScore
+	for rows.Next() {
+		var s HighScore
+		err := rows.Scan(&s.Id, &s.Scores)
+		if err != nil {
+			log.Println("Row scan error:", err)
+			continue
+		}
+		highScores = append(highScores, s)
+	}
+	log.Println(highScores)
+	return highScores, nil
+}
+
+func saveGameResult(state *GameBoard, ctx *gin.Context) {
+	if state.Scores == 0 {
+		return
+	}
+	dbctx, ok := ctx.Get("db")
+	if !ok {
+		log.Print("Failed to connect to db")
+		return
+	}
+	pool, ok := dbctx.(*pgxpool.Pool)
+	if !ok {
+		log.Print("Failed to connect to db")
+		return
+	}
+	_ = pool.QueryRow(
+		context.Background(),
+		`INSERT INTO m3tops(scores) VALUES ($1) RETURNING id;`,
+		state.Scores)
 }

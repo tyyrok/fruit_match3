@@ -1,5 +1,10 @@
 package routes
 
+type HighScore struct {
+	Scores int `json:"scores"`
+	Id int `json:"id"`
+}
+
 type Message struct {
 	Type string `json:"type"`
 	Data map[string]any `json:"data"`
