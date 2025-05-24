@@ -14,6 +14,8 @@ import (
 
 var upgrader = websocket.Upgrader{}
 
+const pongwait = 60 * time.Second
+
 func mainPageHandler(ctx *gin.Context) {
 	ctx.HTML(
 		http.StatusOK,
@@ -31,6 +33,8 @@ func gameHandler(ctx *gin.Context) {
 	}
 	defer c.Close()
 
+	c.SetReadDeadline(time.Now().Add(pongwait))
+	c.SetPongHandler(func(string) error { c.SetReadDeadline(time.Now().Add(pongwait)); return nil })
 	gameState := getInitialGameState()
 	data, _ := json.Marshal(&Message{
 		Type: "update_board",

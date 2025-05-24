@@ -119,7 +119,12 @@
                     this.ws = new WebSocket(`ws://${location.host}/api/start`);
 
                     this.ws.onopen = () => console.log('WebSocket connected');
-                    this.ws.onclose = (e) => console.log('WebSocket disconnected', e);
+                    this.ws.onclose = (e) => {
+                        console.log('WebSocket disconnected', e);
+                        this.inputLocked = false;
+                        this.isProcessingAutoMoves = false;
+                        this.gameStarted = false;
+                    };
                     this.ws.onerror = (e) => console.error('WebSocket error', e);
                     this.ws.onmessage = (e) => {
                         const data = JSON.parse(e.data);
