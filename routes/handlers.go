@@ -6,6 +6,7 @@ import (
 	"log"
 	"math/rand/v2"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -79,11 +80,11 @@ func gameHandler(ctx *gin.Context) {
 			if !ok {
 				return
 			}
+			time.Sleep(time.Millisecond * 100)
 		}
 	}
 }
 
-// Todo autoturn and board change
 func processAutoTurn(state *GameBoard) (*Message, error) {
 	combs := findCombinations(&state.Cells)
 	if len(combs) > 0 {

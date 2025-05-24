@@ -158,9 +158,10 @@
                     this.isProcessingAutoMoves = true;
                     while (this.automoveQueue.length > 0) {
                         const move = this.automoveQueue[0];
-                        console.log(move);
+                        console.log("AutoMove ", move);
                         if (move?.type == "resume") {
                             this.automoveQueue.shift();
+                            this.automoveQueue = [];
                             break
                         }
                         this.handleTurnResult(move);
@@ -171,9 +172,8 @@
                     this.inputLocked = false;
                 },
 
-                handleTurnResult(data) {
+                async handleTurnResult(data) {
                     const elems = [];
-                    console.log(data)
                     for (const turn in data.turns) {
                         for (const p in data.turns[turn].points) {
                             elems.push({
@@ -188,7 +188,7 @@
                         this.board = this.format_board(data.board);
                         this.burningCells = [];
                         this.score = data.scores;
-                    }, 200);
+                    }, 300);
                 },
 
                 format_board(board) {

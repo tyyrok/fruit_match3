@@ -2,7 +2,6 @@ package routes
 
 import (
 	"errors"
-	"log"
 	"math/rand/v2"
 	"sort"
 	"strconv"
@@ -13,8 +12,8 @@ func updateState(state *GameBoard, combs *[]Combination, t *Turn) *GameBoard {
 	new_score := getScoresForCombs(combs)
 	state.Scores += new_score
 	newElems := getNewElems(new_score)
-	if t != nil || *t != (Turn{}) {
-		state.updateBoadByTurn(t)
+	if t != nil && *t != (Turn{}) {
+		state.updateBoardByTurn(t)
 	}
 	state.updateBoard(combs, *newElems)
 	return state	
@@ -38,15 +37,10 @@ func getScoresForCombs(combs *[]Combination) int {
 }
 
 func findCombinations(board *[8][8]int) []Combination {
-	for _, val := range board {
-		log.Println(val)
-	}
 	var combs []Combination
 	combs = findVerticalCombs(board)
 	combs = append(combs, findHorizontalCombs(board)...)
 	combs = removeDuplicateCombs(combs)
-	log.Println("Combs")
-	log.Println(combs)
 	return combs
 }
 
@@ -103,8 +97,6 @@ func findHorizontalCombs(board *[8][8]int) []Combination {
 			}
 		}
 	}
-	log.Println("Horizontal")
-	log.Println(combs)
 	return combs
 }
 
@@ -130,9 +122,6 @@ func findVerticalCombs(board *[8][8]int) []Combination {
 			}
 		}
 	}
-	log.Println("Vertical")
-	//log.Println(board)
-	log.Println(combs)
 	return combs
 }
 

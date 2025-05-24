@@ -32,7 +32,7 @@ type Combination struct {
 }
 
 
-func (b *GameBoard) updateBoadByTurn(t *Turn) {
+func (b *GameBoard) updateBoardByTurn(t *Turn) {
 	b.Cells[t.FromRow][t.FromCol], b.Cells[t.ToRow][t.ToCol] = b.Cells[t.ToRow][t.ToCol], b.Cells[t.FromRow][t.FromCol]
 }
 
