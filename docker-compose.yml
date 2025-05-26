@@ -1,0 +1,11 @@
+services:
+  fruit_match3:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    container_name: fruit_match3
+    command: ["/app/api"]
+    ports:
+      - 80:80
