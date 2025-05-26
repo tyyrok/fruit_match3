@@ -1,6 +1,6 @@
 ## Fruit Match3 browser game based on GO + Websocket + Alpine.js
 
-[Try it here](http://tyyrok.online) — a simple Match3 game where the main goal is to earn the highest number of scores!
+[Try it here](http://match3.tyyrok.online) — a simple Match3 game where the main goal is to earn the highest number of scores!
 
 One day I designed and implemented match3 game backend API for commercial uses on Python, and now I'm very interested in GO, so I decided to implement simple version with this beatiful language. So enjoy or maybe use it for your own projects)
 
@@ -16,3 +16,5 @@ One day I designed and implemented match3 game backend API for commercial uses o
 2. Copy .env.template to .env and fill in the required values.
 3. Start service by `./start.sh` or `docker-compose up --build -d`
 
+### Screenshots
+![alt text](interface.jpg)
