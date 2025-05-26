@@ -16,10 +16,16 @@
         FRUIT MATCH 3
     </h1>
 
-    <div x-data="gameBoard()" class="flex flex-col items-center space-y-8 w-full max-w-3xl">
+    <div
+        x-data="gameBoard()"
+        class="flex flex-col items-center space-y-8 w-full max-w-3xl"
+    >
 
         <!--Game Board-->
-        <div class="grid grid-cols-8 gap-2">
+        <div
+            :class="{ 'border-4 border-red-500': showError }"
+            class="grid grid-cols-8 gap-2 transition-all duration-300 rounded"
+        >
             <template x-for="(row, rowIndex) in [...board].reverse()" :key="rowIndex">
                 <template x-for="(cell, colIndex) in row" :key="colIndex">
                     <div 
@@ -80,6 +86,14 @@
                 inputLocked: false,
                 isProcessingAutoMoves: false,
                 highScores: [],
+                showError: false,
+
+                invalidTurn() {
+                    this.showError = true;
+                    setTimeout(() => {
+                        this.showError = false;
+                    }, 500);
+                },
                 
                 generateInitialBoard() {
                     this.board = Array.from({ length: 8 }, () =>
@@ -143,7 +157,7 @@
                                 this.automoveQueue.push(data.data);
                                 this.handleAutomoveQueue();
                             } else if (data.data.status == "failure") {
-
+                                this.invalidTurn();
                             }
                         } else if (data.type == "automove") {
                             if (data.data.status == "success") {
