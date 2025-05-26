@@ -139,7 +139,9 @@
                             if (data.data.status == "success") {
                                 this.score = data.data.scores;
                                 this.swapCells(data.data.turn.FromRow, data.data.turn.FromCol, data.data.turn.ToRow, data.data.turn.ToCol);
-                                this.handleTurnResult(data.data);
+                                this.inputLocked = true;
+                                this.automoveQueue.push(data.data);
+                                this.handleAutomoveQueue();
                             } else if (data.data.status == "failure") {
 
                             }
@@ -167,7 +169,6 @@
                     this.isProcessingAutoMoves = true;
                     while (this.automoveQueue.length > 0) {
                         const move = this.automoveQueue[0];
-                        console.log("AutoMove ", move);
                         if (move?.type == "resume") {
                             this.automoveQueue.shift();
                             this.automoveQueue = [];
@@ -192,7 +193,6 @@
                         }
                     }
                     this.burningCells = elems;
-    
                     setTimeout(() => {
                         this.board = this.format_board(data.board);
                         this.burningCells = [];
