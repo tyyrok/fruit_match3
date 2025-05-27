@@ -16,17 +16,10 @@ func NewRouter() *gin.Engine {
 	// Set the router as the default one shipped with Gin
 	router := gin.Default()
 	expectedHost := os.Getenv("ORIGIN")
-	port := os.Getenv("PORT")
-	var host string
-	if port == "80" {
-		host = expectedHost
-	} else {
-		host = fmt.Sprintf("%s:%s", expectedHost, port)
-	}
 
 	// Setup Security Headers
 	router.Use(func(c *gin.Context) {
-		if c.Request.Host != host {
+		if c.Request.Host != expectedHost {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid host header"})
 			return
 		}
@@ -75,13 +68,8 @@ func CheckOrigin() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		schema := os.Getenv("SCHEMA")
 		expectedHost := os.Getenv("ORIGIN")
-		port := os.Getenv("PORT")
-		var host string
-		if port == "80" {
-			host = fmt.Sprintf("%s%s", schema, expectedHost)
-		} else {
-			host = fmt.Sprintf("%s%s:%s", schema, expectedHost, port)
-		}
+		host := fmt.Sprintf("%s%s", schema, expectedHost)
+
 		origin := ctx.GetHeader("Origin")
 		referer := ctx.GetHeader("Referer")
 
