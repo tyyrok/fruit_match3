@@ -58,7 +58,6 @@ func gameHandler(ctx *gin.Context) {
 	}
 	defer c.Close()
 
-	c.SetReadDeadline(time.Now().Add(pongwait))
 	gameState := getInitialGameState()
 	data, _ := json.Marshal(&Message{
 		Type: "update_board",
@@ -71,6 +70,7 @@ func gameHandler(ctx *gin.Context) {
 	}
 
 	for {
+		c.SetReadDeadline(time.Now().Add(pongwait))
 		mt, message, err := c.ReadMessage()
 		if err != nil {
 			log.Printf("Read msg error: %s", err)
