@@ -146,7 +146,6 @@
                     this.ws.onerror = (e) => console.error('WebSocket error', e);
                     this.ws.onmessage = (e) => {
                         const data = JSON.parse(e.data);
-                        console.log("Message", data);
                         if (data.type === "update_board") {
                             this.board = this.format_board(data.data.board);
                         } else if (data.type == "move") {
@@ -257,7 +256,6 @@
                     if (el) {
                         try {
                             this.highScores = JSON.parse(el.textContent).map((e) => e.scores);
-                            console.log(this.highScores)
                         } catch (e) {
                             console.error("Invalid JSON in #highScores-data:", e);
                         }
