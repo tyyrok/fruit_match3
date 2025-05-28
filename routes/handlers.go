@@ -63,6 +63,7 @@ func gameHandler(ctx *gin.Context) {
 		Type: "update_board",
 		Data: map[string]any{"board": gameState.Cells},
 	})
+	c.SetWriteDeadline(time.Now().Add(3 * time.Second))
 	err = c.WriteMessage(1, data)
 	if err != nil {
 		log.Printf("Write msg error: %s", err)
@@ -82,6 +83,7 @@ func gameHandler(ctx *gin.Context) {
 		err = json.Unmarshal(message, &msg)
 		if err != nil {
 			res, _ := json.Marshal("Wrong message type")
+			c.SetWriteDeadline(time.Now().Add(3 * time.Second))
 			err = c.WriteMessage(mt, res)
 			if err != nil {
 				log.Printf("Write msg error: %s", err)

@@ -234,8 +234,11 @@ func saveGameResult(state *GameBoard, ctx *gin.Context) {
 		log.Print("Failed to connect to db")
 		return
 	}
-	_ = pool.QueryRow(
-		context.Background(),
-		`INSERT INTO m3tops(scores) VALUES ($1) RETURNING id;`,
-		state.Scores)
+	_, err := pool.Exec(
+			context.Background(),
+			`INSERT INTO m3tops(scores) VALUES ($1) RETURNING id;`,
+			state.Scores)
+	if err != nil {
+		log.Printf("Error while saving result %s\n", err)
+	}
 }
